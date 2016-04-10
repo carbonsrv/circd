@@ -30,7 +30,7 @@ local sv = assert(net.listen("tcp", (config.bind or ":6667")))
 
 -- Store stuff in KVStore
 kvstore.set("circd:sv", sv)
-kvstore.set("circd:servername", "circd.lua")
+kvstore.set("circd:servername", settings.servername)
 
 -- Helpers
 local function send(client, txt)
