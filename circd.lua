@@ -1,3 +1,4 @@
+#!/usr/bin/env carbon
 -- CIRCd
 
 -- Load libs
@@ -7,7 +8,25 @@ loader = require("libs.loader")
 command = require("libs.command")
 local clib = require("libs.clib")
 
-local sv = assert(net.listen("tcp", (arg[1] or ":6667")))
+-- Config. Yayzers.
+local settings
+if arg[1] then
+	local src, err = fs.readfile(arg[1])
+	if err then
+		error(err, 0)
+	end
+	settings = loadstring(src, arg[1])()
+else
+	error("Usage: carbon circd.lua <settings.lua>", 0)
+end
+
+-- Global so every file can use it.
+config = settings
+
+-- Use it with: local settings = config
+
+-- Listen
+local sv = assert(net.listen("tcp", (config.bind or ":6667")))
 
 -- Store stuff in KVStore
 kvstore.set("circd:sv", sv)
@@ -54,6 +73,10 @@ end
 -- TODO: change id scheme
 local id = 0
 
+-- rate limits
+local rate_limit_global = settings.rate_limit_global
+local rate_limit_override = settings.rate_limit_override
+
 while true do
 	local cl, err=sv.Accept()
 	if err then
@@ -70,6 +93,7 @@ while true do
 	event.force_fire("circd:newclient", client)
 	thread.run(function()
 		local event = require("libs.event")
+		local clib = require("libs.clib")
 		local buff = ""
 		while true do
 			local txt, err = net.read(cl, 1)
@@ -88,8 +112,16 @@ while true do
 			buff = string.gsub(tmp, "(.-)[\r\n+]", function(line)
 				if line:gsub("[\r\n]", "") ~= "" then
 					event.fire("circd:raw", client, line:gsub("[\r\n+]", ""):sub(1,256))
-					if client.ip ~= "127.0.0.1" then
-						os.sleep(0.1)
+					local override
+					local host = clib.gethost(client.id)
+					if host then
+						override = rate_limit_override[host]
+					end
+
+					-- Perfect Rate Limiting(tm)
+					local time = override or rate_limit_global
+					if time ~= 0 then
+						os.sleep(override or rate_limit_global)
 					end
 				end
 				return ""

@@ -148,7 +148,6 @@ end
 function clib.in_channel(chan, id)
 	local users = clib.list_users(chan)
 	if not users then
-		print("no users!!!!")
 		return false
 	end
 	for user, _ in pairs(users) do

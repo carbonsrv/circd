@@ -1,5 +1,8 @@
 -- 00_init.lua: New connections.
 
+-- localize config to bind to threads
+local settings = config
+
 local function encode(client, code, ...)
 	local p = {...}
 	if (p[#p] or ""):match("%s") then
@@ -126,6 +129,8 @@ command.new("user",function(client, username,_ ,_ , realname)
 end)
 
 -- Init message.
+kvstore.set("circd:settings:motd", settings.motd)
+
 event.handle("circd:init_message", function(cl)
 	local clib = require("libs.clib")
 	clib.setconnected(cl.id, true)
@@ -135,6 +140,7 @@ event.handle("circd:init_message", function(cl)
 		clib.srvmsg(cl, code, nick, ...)
 	end
 
+	-- TODO: make this actually output correct data.
 	msg(001, "Welcome to my irc server, "..nick)
 	msg(002, "Your host is Server, running CIRCd version 0.0-0")
 	msg(003, "This server was created Jan 1 0000 at 00:00:00 UTC")
@@ -152,12 +158,11 @@ event.handle("circd:init_message", function(cl)
 	msg(250, "Highest connection count: 1337 (1337 clients) (1337 connections received)")
 
 	msg(375, "- "..kvstore.get("circd:servername").." Message of the Day -")
-	msg(372, " _                   _______")
-	msg(372, "| |   _   _  __ _   / /___ /")
-	msg(372, "| |  | | | |/ _` | / /  |_ \\")
-	msg(372, "| |__| |_| | (_| | \\ \\ ___) |")
-	msg(372, "|_____\\__,_|\\__,_|  \\_\\____/")
-	msg(372, "	Fo Shizzlez!	")
+	for line in string.gmatch(kvstore._get("circd:settings:motd"), "(.-)[\r\n]") do
+		if string.gsub(line, "[%s\r\n]+", "") ~= "" then
+			msg(372, line)
+		end
+	end
 	msg(376, "End of /MOTD command.")
 
 	clib.send(cl, ":"..clib.gethost(cl.id).." MODE "..nick.." :+i")
@@ -173,12 +178,11 @@ command.new("motd", function(cl)
 	end
 
 	msg(375, "- "..kvstore.get("circd:servername").." Message of the Day -")
-	msg(372, " _                   _______")
-	msg(372, "| |   _   _  __ _   / /___ /")
-	msg(372, "| |  | | | |/ _` | / /  |_ \\")
-	msg(372, "| |__| |_| | (_| | \\ \\ ___) |")
-	msg(372, "|_____\\__,_|\\__,_|  \\_\\____/")
-	msg(372, "	Fo Shizzlez!	")
+	for line in string.gmatch(kvstore._get("circd:settings:motd"), "(.-)[\r\n]") do
+		if string.gsub(line, "[%s\r\n]+", "") ~= "" then
+			msg(372, line)
+		end
+	end
 	msg(376, "End of /MOTD command.")
 end)
 

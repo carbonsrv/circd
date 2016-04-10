@@ -1,13 +1,17 @@
 -- Pings
 
+-- localize config to bind to threads
+local settings = config
+
 event.handle("circd:connect", function(cl)
 	local event = require("libs.event")
-	event.fire("circd:ping", cl)
+	event.fire("circd:ping", cl, settings.ping_rate)
 end)
 
-event.handle("circd:ping", function(cl)
+event.handle("circd:ping", function(cl, ping_rate)
+	local prate = ping_rate
 	thread.run(function()
-		local maxping = 180
+		local maxping = prate
 		local clib = require("libs.clib")
 
 		while true do

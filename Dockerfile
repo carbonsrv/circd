@@ -15,4 +15,4 @@ COPY . /circd
 
 # Run cobalt
 ENTRYPOINT ["/usr/bin/carbon", "-root=/circd", "/circd/circd.lua"]
-CMD [":6667"]
+CMD ["/conf/settings.lua"]

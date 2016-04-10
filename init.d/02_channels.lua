@@ -28,7 +28,6 @@ pubsub.sub("event:circd:chan", function()
 		local cmd, id, chan, arg = recv()
 
 		if cmd == "join" then -- join channel
-			print("join")
 			chans[chan] = chans[chan] or {}
 			kvstore._set("circd:chan:exists:"..chan, true)
 			chans[chan][id] = arg or ""
@@ -36,7 +35,6 @@ pubsub.sub("event:circd:chan", function()
 			if host then
 				local msg = ":"..host.." JOIN "..chan
 				for u_id, _ in pairs(chans[chan]) do
-					print("uid: "..tostring(u_id))
 					--if u_id ~= id then
 						local client = clib.getclient(u_id)
 						clib.send(client, msg)
@@ -114,7 +112,6 @@ event.handle("circd:chan:join", function(id, chan) -- topic
 	local clib = require("libs.clib")
 	local nick = clib.getnick(id)
 	local topic = clib.gettopic(chan)
-	print(id, nick, chan)
 	if topic then
 		clib.srvmsg(332, nick, chan, ":"..topic)
 	end
@@ -122,7 +119,6 @@ end)
 
 -- Commands
 command.new("join", function(client, chan)
-	print("join")
 	local clib = require("libs.clib")
 	if not chan then
 		return 461, "JOIN", "Not enough parameters"
