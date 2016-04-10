@@ -7,7 +7,7 @@ loader = require("libs.loader")
 command = require("libs.command")
 local clib = require("libs.clib")
 
-local sv = assert(net.listen("tcp", ":6667"))
+local sv = assert(net.listen("tcp", (arg[1] or ":6667")))
 
 -- Store stuff in KVStore
 kvstore.set("circd:sv", sv)
@@ -88,6 +88,9 @@ while true do
 			buff = string.gsub(tmp, "(.-)[\r\n+]", function(line)
 				if line:gsub("[\r\n]", "") ~= "" then
 					event.fire("circd:raw", client, line:gsub("[\r\n+]", ""):sub(1,256))
+					if client.ip ~= "127.0.0.1" then
+						os.sleep(0.1)
+					end
 				end
 				return ""
 			end)
