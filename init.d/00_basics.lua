@@ -192,6 +192,9 @@ event.handle("circd:disconnect", function(client)
 end)
 
 command.new("quit", function(client, reason)
+	if reason then
+		reason = reason:gsub("^:", "")
+	end
 	client:close(reason or "Client Quit")
 	event.fire("circd:disconnect", client, reason or "Client Quit")
 end)

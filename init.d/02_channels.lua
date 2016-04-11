@@ -66,17 +66,18 @@ pubsub.sub("event:circd:chan", function()
 				---end
 			end
 			if users <= 1 then
+				chans[chan] = nil
 				kvstore._del("circd:chan:exists:"..chan)
 			end
 			event.fire("circd:chan:part", id, chan, (arg or "User left the channel."))
 		elseif cmd == "quit" then -- quit irc
+			local to_clients = {}
 			for name, users_chan in pairs(chans) do
 				if users_chan[id] then
 					chans[name][id] = nil
 					local users = 0
 					for u_id, _ in pairs(users_chan) do
-						local client = clib.getclient(u_id)
-						clib.send(client, ":"..clib.gethost(id).." QUIT :"..(arg or "Client Quit"))
+						to_clients[u_id] = true
 						users = users + 1
 					end
 					if users == 0 then
@@ -84,6 +85,10 @@ pubsub.sub("event:circd:chan", function()
 						kvstore._del("circd:chan:exists:"..name)
 					end
 				end
+			end
+			for u_id, _ in pairs(to_clients) do
+				local client = clib.getclient(u_id)
+				clib.send(client, ":"..clib.gethost(id).." QUIT :"..(arg or "Client Quit"))
 			end
 			clib.deleteuser(id)
 			event.fire("circd:quit", id, (arg or "Client Quit"))
