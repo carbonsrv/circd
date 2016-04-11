@@ -92,7 +92,7 @@ command.new("nick", function(client, nick)
 	local user = clib.getuser(client.id)
 
 	if user then
-		clib.sethost(client.id, nick.."!"..clib.getuser(client.id).."@"..client.ip)
+		clib.sethost(client.id, nick.."!"..user.."@"..client.ip)
 	end
 
 	if not clib.isconnected(client.id) and user then
@@ -101,8 +101,9 @@ command.new("nick", function(client, nick)
 			event.fire("circd:connect", client)
 		end
 	elseif user then
-		local old_hostmask = nick_before.."!"..clib.getuser(client.id).."@"..client.ip
+		local old_hostmask = nick_before.."!"..user.."@"..client.ip
 		clib.send_all_with_user(client.id, ":"..old_hostmask.." NICK "..nick)
+		client:send(":"..old_hostmask.." NICK "..nick)
 	end
 end)
 

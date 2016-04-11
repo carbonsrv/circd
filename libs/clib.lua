@@ -163,7 +163,7 @@ function clib.get_channels(id) -- get list of channels user is in
 	local res = com.receive(c)
 	com.close(c)
 	local users = msgpack.unpack(res)
-	print("users for "..chan)
+	print("users for "..id)
 	for k, v in pairs(users) do
 		print(k..": "..v)
 	end
