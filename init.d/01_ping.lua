@@ -3,15 +3,16 @@
 -- localize config to bind to threads
 local settings = config
 
+kvstore.set("circd:settings:ping_rate", settings.ping_rate)
+
 event.handle("circd:connect", function(cl)
 	local event = require("libs.event")
-	event.fire("circd:ping", cl, settings.ping_rate)
+	event.fire("circd:ping", cl)
 end)
 
-event.handle("circd:ping", function(cl, ping_rate)
-	local prate = ping_rate
+event.handle("circd:ping", function(cl)
 	thread.run(function()
-		local maxping = prate
+		local maxping = kvstore._get("circd:settings:ping_rate")
 		local clib = require("libs.clib")
 
 		while true do

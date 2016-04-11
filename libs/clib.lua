@@ -9,7 +9,12 @@ local msgpack = require("msgpack")
 
 -- Get stored data
 function clib.getclient(id) -- get client assigned to id
-	return kvstore._get("circd:client:"..id)
+	local client = msgpack.unpack(kvstore._get("circd:client:"..id))
+	client.sock = clib.getsock(id)
+	return client
+end
+function clib.getsock(id) -- get client assigned to id
+	return kvstore._get("circd:client:sock:"..id)
 end
 function clib.isconnected(id) -- get connection status
 	return kvstore._get("circd:client:connected:"..id)
@@ -28,9 +33,16 @@ function clib.gethost(id) -- get hostmask
 end
 
 -- Set stored data
-function clib.setclient(id, client) -- set client behind id
-	kvstore._set("circd:client:"..id, client)
+function clib.setclient(id, client, nosock) -- set client behind id
+	if not nosock then
+		clib.setsock(id, client.sock)
+	end
+	kvstore._set("circd:client:"..id, msgpack.pack(client))
 end
+function clib.setsock(id, sock) -- set client behind id
+	kvstore._set("circd:client:sock:"..id, sock)
+end
+
 function clib.setid(nick, id) -- set id assigned to nick
 	kvstore._set("circd:client:id:"..nick, id)
 end
@@ -84,6 +96,13 @@ function clib.send(client, msg) -- send message to client
 	net.write(client.sock, msg.."\r\n")
 end
 function clib.srvmsg(client, code, ...) -- server message, encoding it properly
+	local id
+	if type(client) == "table" then
+		id = client.id
+	else
+		id = client
+	end
+
 	if not code then
 		error("No code given!")
 	end
@@ -98,7 +117,7 @@ function clib.srvmsg(client, code, ...) -- server message, encoding it properly
 		code = ("0"):rep(math.max(0,3-#code))..code
 	end
 
-	net.write(client.sock, ":"..(kvstore.get("circd:servername") or "circd").." "..code.." "..table.concat(p, " ").."\r\n")
+	net.write(client.sock or clib.getsock(id), ":"..(kvstore.get("circd:servername") or "circd").." "..code.." "..table.concat(p, " ").."\r\n")
 end
 
 ----
@@ -143,7 +162,12 @@ function clib.get_channels(id) -- get list of channels user is in
 	event.fire("circd:chan", "getchannels", id, nil, c)
 	local res = com.receive(c)
 	com.close(c)
-	return msgpack.unpack(res)
+	local users = msgpack.unpack(res)
+	print("users for "..chan)
+	for k, v in pairs(users) do
+		print(k..": "..v)
+	end
+	return users
 end
 function clib.in_channel(chan, id)
 	local users = clib.list_users(chan)

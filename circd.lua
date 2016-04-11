@@ -90,6 +90,8 @@ while true do
 		send = send,
 		close = close,
 	}
+	clib.setclient(client.id, client, true)
+	clib.setsock(client.id, sock)
 	event.force_fire("circd:newclient", client)
 	thread.run(function()
 		local event = require("libs.event")

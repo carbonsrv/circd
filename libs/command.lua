@@ -1,5 +1,7 @@
 -- command
 
+local event = require("libs.event")
+
 local command = {}
 
 function command.new(name, fn)
@@ -16,8 +18,11 @@ function command.new(name, fn)
 	})
 end
 
-function command.run(client, cmd, ...)
-	event.fire("circd:command:"..name:lower(), cmd, client, ...)
+function command.run(name, client, ...)
+	if not client then
+		error("Client not given!")
+	end
+	event.fire("circd:command:"..name:lower(), client, ...)
 end
 
 return command

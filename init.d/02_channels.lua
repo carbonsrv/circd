@@ -4,11 +4,13 @@ local pubsub = require("pubsub")
 local event = require("libs.event")
 
 pubsub.sub("event:circd:chan", function()
-	msgpack = require("msgpack")
-	logger = require("libs.logger")
-	event = require("libs.event")
-	prettify = require("prettify")
-	clib = require("libs.clib")
+	local msgpack = require("msgpack")
+	local logger = require("libs.logger")
+	local event = require("libs.event")
+	local prettify = require("prettify")
+	local clib = require("libs.clib")
+	local command = require("libs.command")
+
 	function print(...)
 		logger.log("circd:chan", logger.normal, prettify(...))
 	end
@@ -27,6 +29,10 @@ pubsub.sub("event:circd:chan", function()
 		-- receive command
 		local cmd, id, chan, arg = recv()
 
+		if chan then
+			chan = chan:gsub("%s+", "")
+		end
+
 		if cmd == "join" then -- join channel
 			chans[chan] = chans[chan] or {}
 			kvstore._set("circd:chan:exists:"..chan, true)
@@ -40,6 +46,8 @@ pubsub.sub("event:circd:chan", function()
 						clib.send(client, msg)
 					--end
 				end
+				local client = clib.getclient(id)
+				command.run("names", client, chan)
 				event.fire("circd:chan:join", id, chan)
 			end
 		elseif cmd == "mode" then -- update mode
@@ -167,4 +175,31 @@ command.new("notice", function(cl, to, msg)
 	if not clib.privmsg(cl.id, to, msg) then
 		return 401, chan, "No such nick/channel"
 	end
+end)
+
+command.new("names", function(cl, chan)
+	print("names")
+	if not chan then
+		return 461, "NAMES", "Not enough parameters"
+	end
+	local clib = require("libs.clib")
+	local users = clib.list_users(chan)
+	if users then
+		local ids = {}
+		for id, mode in pairs(users) do
+			print(id)
+			table.insert(ids, id)
+		end
+		for l1=1, #ids, 50 do
+			local o = {}
+			for l2=l1, l1+49 do
+				local id = ids[l2]
+				if id then
+					table.insert(o, (users[id] or "")..clib.getnick(id))
+				end
+			end
+			clib.srvmsg(cl, 353, "=", chan, ":"..table.concat(o, " "))
+		end
+	end
+	clib.srvmsg(cl, 366, "*", chan, ":End of /NAMES list.")
 end)
