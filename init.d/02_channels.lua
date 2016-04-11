@@ -183,6 +183,7 @@ command.new("names", function(cl, chan)
 		return 461, "NAMES", "Not enough parameters"
 	end
 	local clib = require("libs.clib")
+	local nick = clib.getnick(cl.id)
 	local users = clib.list_users(chan)
 	if users then
 		local ids = {}
@@ -198,8 +199,8 @@ command.new("names", function(cl, chan)
 					table.insert(o, (users[id] or "")..clib.getnick(id))
 				end
 			end
-			clib.srvmsg(cl, 353, "=", chan, ":"..table.concat(o, " "))
+			clib.srvmsg(cl, 353, nick, "@", chan, ":"..table.concat(o, " "))
 		end
 	end
-	clib.srvmsg(cl, 366, "*", chan, ":End of /NAMES list.")
+	clib.srvmsg(cl, 366, nick, chan, ":End of /NAMES list.")
 end)

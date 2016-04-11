@@ -15,7 +15,11 @@ if arg[1] then
 	if err then
 		error(err, 0)
 	end
-	settings = loadstring(src, arg[1])()
+	f, err = loadstring(src, arg[1])
+	if err then
+		error(err, 0)
+	end
+	settings = f()
 else
 	error("Usage: carbon circd.lua <settings.lua>", 0)
 end
@@ -101,7 +105,9 @@ while true do
 			local txt, err = net.read(cl, 1)
 			if err then
 				if err == "EOF" then
-					event.fire("circd:disconnect", client, "Connection Terminated")
+					if clib.getnick(id) then
+						event.fire("circd:disconnect", client, "Connection Terminated")
+					end
 					break
 				else
 					print("client err: ".. err)
