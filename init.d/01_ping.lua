@@ -66,5 +66,5 @@ command.new("pong", function(cl, pongdata)
 end)
 
 command.new("ping", function(cl, dat)
-	return "PONG "..kvstore("circd:servername").." :"..dat
+	return "PONG "..kvstore._get("circd:servername").." :"..dat
 end)
