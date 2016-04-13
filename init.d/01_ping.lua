@@ -22,10 +22,11 @@ event.handle("circd:ping", function(cl)
 			local pingdata
 			if firstping then
 				pingdata = carbon.randomstring(8)
+				firstping = false
 			else
 				pingdata = srvname
 			end
-			
+
 			local key = "clib:client:ping:"..cl.id..":"..pingdata
 			print("ping data is "..pingdata)
 			kvstore._set(key, true)
