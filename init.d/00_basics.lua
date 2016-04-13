@@ -39,6 +39,11 @@ event.handle("circd:raw", function(client, txt) -- handle client messages
 			for item in params:gmatch("%S+") do
 				table.insert(pr, item)
 			end
+			local last = pr[#pr]
+			if last then
+				pr[#pr] = last:gsub("^:", "")
+			end
+
 			if long then
 				table.insert(pr, long)
 			end
