@@ -15,8 +15,17 @@ event.handle("circd:ping", function(cl)
 		local maxping = kvstore._get("circd:settings:ping_rate")
 		local clib = require("libs.clib")
 
+		local firstping = true
+		local srvname = kvstore.get("circd:servername")
+
 		while true do
-			local pingdata = carbon.randomstring(8)
+			local pingdata
+			if firstping then
+				pingdata = carbon.randomstring(8)
+			else
+				pingdata = srvname
+			end
+			
 			local key = "clib:client:ping:"..cl.id..":"..pingdata
 			print("ping data is "..pingdata)
 			kvstore._set(key, true)
