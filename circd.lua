@@ -117,7 +117,7 @@ while true do
 				end
 			end
 			local tmp = (buff .. txt)
-			buff = string.gsub(tmp, "(.-)[\r\n+]", function(line)
+			buff = string.gsub(tmp, "(.-)[\r\n]+", function(line)
 				if line:gsub("[\r\n]", "") ~= "" then
 					event.fire("circd:raw", client, line:gsub("[\r\n+]", ""):sub(1,256))
 					local override

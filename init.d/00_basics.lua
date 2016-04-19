@@ -24,21 +24,23 @@ end)
 
 event.handle("circd:raw", function(client, txt) -- handle client messages
 	local clib = require("libs.clib")
-	print("Raw")
+	print ("Raw '" .. tostring(txt) .. "'")
 	local cmd, params = txt:match("^(%S*)%s?(.*)")
+
 	if cmd:gsub("^ +", "") ~= "" then
 		cmd=cmd:lower()
-		print("Got command: '"..cmd.."'")
 		if clib.isconnected(client.id) or cmd == "nick" or cmd == "user" or cmd == "pong" or cmd == "cap" then
-			local long = params:match("%s:(.*)")
+			local long = params:match("%s:(.*)$")
+
 			if long then
-				params = params:gsub("%s:.*", "")
+				params = params:gsub("%s:.*$", "")
 			end
 
 			local pr = {}
 			for item in params:gmatch("%S+") do
 				table.insert(pr, item)
 			end
+
 			local last = pr[#pr]
 			if last then
 				pr[#pr] = last:gsub("^:", "")
