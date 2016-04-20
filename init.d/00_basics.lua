@@ -23,25 +23,36 @@ event.handle("circd:newclient", function(cl)
 end)
 
 event.handle("circd:raw", function(client, txt) -- handle client messages
+	print ("Raw '" .. txt .. "'")
 	local clib = require("libs.clib")
-	print("Raw")
 	local cmd, params = txt:match("^(%S*)%s?(.*)")
+	print ("1. pattern applied '" .. cmd .. "', '" .. params .. "'")
+
 	if cmd:gsub("^ +", "") ~= "" then
 		cmd=cmd:lower()
 		print("Got command: '"..cmd.."'")
 		if clib.isconnected(client.id) or cmd == "nick" or cmd == "user" or cmd == "pong" or cmd == "cap" then
 			local long = params:match("%s:(.*)$")
+			print ("2. long applied '" .. long .. "'")
 			if long then
 				params = params:gsub("%s:.*$", "")
+				print ("3. params matching '" .. params .. "'")
 			end
 
 			local pr = {}
 			for item in params:gmatch("%S+") do
 				table.insert(pr, item)
 			end
+
+			print ("4. iterating pr:")
+			for k,v in pairs (pr) do
+				print ("| '" .. v .. "'")
+			end
+
 			local last = pr[#pr]
 			if last then
 				pr[#pr] = last:gsub("^:", "")
+				print ("5. removed ':' '" .. pr[#pr] .. "' ")
 			end
 
 			if long then
