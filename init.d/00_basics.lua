@@ -30,13 +30,13 @@ event.handle("circd:raw", function(client, txt) -- handle client messages
 
 	if cmd:gsub("^ +", "") ~= "" then
 		cmd=cmd:lower()
-		print("Got command: '"..cmd.."'")
+		print("Got command: '"..tostring(cmd).."'")
 		if clib.isconnected(client.id) or cmd == "nick" or cmd == "user" or cmd == "pong" or cmd == "cap" then
 			local long = params:match("%s:(.*)$")
 			print ("2. long applied '" .. tostring (long)  .. "'")
 			if long then
 				params = params:gsub("%s:.*$", "")
-				print ("3. params matching '" .. params .. "'")
+				print ("3. params matching '" .. tostring (params) .. "'")
 			end
 
 			local pr = {}
@@ -46,13 +46,13 @@ event.handle("circd:raw", function(client, txt) -- handle client messages
 
 			print ("4. iterating pr:")
 			for k,v in pairs (pr) do
-				print ("| '" .. v .. "'")
+				print ("| '" .. tostring (v) .. "'")
 			end
 
 			local last = pr[#pr]
 			if last then
 				pr[#pr] = last:gsub("^:", "")
-				print ("5. removed ':' '" .. pr[#pr] .. "' ")
+				print ("5. removed ':' '" .. tostring (pr[#pr]) .. "' ")
 			end
 
 			if long then
